@@ -74,7 +74,7 @@ class Server:
                     
             with open("./resources/" + file_name, "rb") as file:
               l = 0
-              while l <= int(file_size):
+              while l < int(file_size):
                 data = file.read(32768)
                 if not (data):
                   break
@@ -83,7 +83,7 @@ class Server:
                 l += len(data)
                 print(str(l))  
             print("File transmitted")
-            message = str(l)
+            message = "FILETRANSMITTED"
             self.sock.sendto(message.encode(), address)
             file.close()
           else:
@@ -106,7 +106,8 @@ class Server:
             file_name = self.sock.recv(100).decode('utf-8')
             file_size = self.sock.recv(100).decode('utf-8')
             #print("FILE NAME: " + file_name + " FILE SIZE: " + file_size + " byte")
-                        
+              
+            
             with open("./resources/" + file_name , "wb") as file:
               l = 0
               while l < int(file_size):
@@ -120,16 +121,17 @@ class Server:
               file.close()
                         
             data, server = self.sock.recvfrom(4096)
-            if(data.decode('utf-8') == str(l)):
-              print("Entire file received")
-              message = "FileOK"
-              self.sock.sendto(message.encode(), address)
-            else:
-              print("Part of file not arrived")
-              message = "FileNotOK"
-              self.sock.sendto(message.encode(), address)
-            time.sleep(2)
-            print ('Message received')
+            if data.decode('utf-8') == "FILETRANSMITTED":
+              if l == int(file_size):
+                print("Entire file received")
+                message = "FileOK"
+                self.sock.sendto(message.encode(), address)
+              else:
+                print("Part of file not arrived")
+                message = "FileNotOK"
+                self.sock.sendto(message.encode(), address)
+              time.sleep(2)
+              print ('Message received')
             file.close()
           else:
             print("File does not exist")

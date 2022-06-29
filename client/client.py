@@ -77,13 +77,15 @@ class Client:
         file.close()
 
         data, server = self.sock.recvfrom(4096)
-        if data.decode('utf-8') == str(l):
-          print("Entire file received")
+        if data.decode('utf-8') == "FILETRANSMITTED":
+          if l == int(file_size):
+            print("Entire file received")
+          else:
+            print("Part of file not received")
+          time.sleep(2)
+          print("Message received")
         else:
-          print("Part of file not received")
-
-        time.sleep(2)
-        print("Message received")
+          print("File not received")
         file.close()
       else:
         print("File does not exist")
@@ -102,7 +104,7 @@ class Client:
       self.sock.sendto(message.encode(), self.server_address)
             
       if path.isfile("./myFiles/" + file_name):
-        print("IL FILE ESISTE")
+        print("File exist")
         message = "OK"
         self.sock.sendto(message.encode(), self.server_address)
         file_size = os.path.getsize("./myFiles/" + file_name)
@@ -112,7 +114,7 @@ class Client:
                 
         with open("./myFiles/" + file_name, "rb") as file:
           l = 0          
-          while l <= int(file_size):
+          while l < int(file_size):
             data = file.read(32768)
             if not (data):
               break
@@ -121,14 +123,14 @@ class Client:
             l += len(data)
             #print(str(l))        
         #print("File transmitted")
-        message = str(l)
+        message = "FILETRANSMITTED"
         self.sock.sendto(message.encode(), self.server_address)      
         file.close()
         data, server = self.sock.recvfrom(4096)
         if data.decode('utf-8') == "FileOK":
-          print("File ok")
+          print("File received correctly")
         else: 
-          print("File not ok")
+          print("File not received correctly")
       else:
         print("File does not exixst")
         message = "ERROR"
